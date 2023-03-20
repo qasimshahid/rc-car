@@ -19,10 +19,8 @@ PORT = 7007
 beagleIP = get_ip()
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((beagleIP, PORT))
-sock.listen()
-
 while True:
-    clientSocket, address = sock.accept()
-    print(f"Connection established from address {address}")
-    clientSocket.send(bytes("Welcome!", "utf-8"))
-    clientSocket.close()
+    data, address = sock.recvfrom(4096)
+    print(f"Received {len(data)} bytes from {address}: {data.decode()}")
+    message = "Welcome!"
+    sock.sendto(message.encode(), address)

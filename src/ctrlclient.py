@@ -7,8 +7,5 @@ print("First, please specify the IP address of the server. Form : 192.168.x.x."
 IP = str(input("Enter IP address: "))
 PORT = 7007
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.connect((IP, PORT))
-
-message = sock.recv(2048)
-
-print("Message received:", message)
+data, address = sock.recvfrom(4096)
+print(f"Message received from {address}: {data.decode()}")
