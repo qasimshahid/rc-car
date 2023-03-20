@@ -1,7 +1,7 @@
 import socket
 
 
-def get_ip():  # courtesy of stack overflow, finds the primary ip address not the
+def get_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     s.settimeout(0)
     try:
@@ -15,12 +15,17 @@ def get_ip():  # courtesy of stack overflow, finds the primary ip address not th
     return ip
 
 
-PORT = 7007
-beagleIP = get_ip()
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((beagleIP, PORT))
-while True:
-    data, address = sock.recvfrom(4096)
-    print(f"Received {len(data)} bytes from {address}: {data.decode()}")
-    message = "Welcome!"
-    sock.sendto(message.encode(), address)
+buff = 1024
+port = 7007
+hostIP = get_ip()
+print("Host IP: " + hostIP)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.bind((hostIP, port))
+sock.listen(1)
+
+clientSocket, clientAddress = sock.accept()
+print(f"Connection established from address {clientAddress}")
+clientSocket.send(bytes("Hello!", "utf-8"))
+
+
+sock.close()
