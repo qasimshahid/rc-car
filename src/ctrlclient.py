@@ -1,9 +1,13 @@
 import socket
 
-print("First, please specify the IP address of the server. Form : 192.168.x.x")  #192.168.1.250
-IP = input()
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(("192.168.1.250", 7007))
+print("First, please specify the IP address of the server. Form : 192.168.x.x."
+      "\nIf you do not know the IP address, please run \"ifconfig\" on the beaglebone."
+      "\nYou should scroll all the way down to the wlan0 section. "
+      "From there, copy the IP address after \"inet\"\n\n Enter the IP: ")
+IP = str(input())
+PORT = 7007
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+sock.connect((IP, PORT))
 
 message = sock.recv(2048)
 

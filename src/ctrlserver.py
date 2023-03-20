@@ -17,7 +17,7 @@ def get_ip():  # courtesy of stack overflow, finds the primary ip address not th
 
 PORT = 7007
 beagleIP = get_ip()
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 sock.bind((beagleIP, PORT))
 sock.listen()
 
