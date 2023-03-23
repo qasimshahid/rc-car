@@ -1,24 +1,52 @@
 import cv2
 
-# define a video capture object
-vid = cv2.VideoCapture(0)
+# Create an object to read from camera
+video = cv2.VideoCapture(0)
 
-while True:
+# We need to check if camera is opened previously or not
+if not video.isOpened():
+    print("Error reading video file")
 
-    # Capture the video frame
-    # by frame
-    ret, frame = vid.read()
+# We need to set resolutions.
+# So, convert them from float to integer.
+frame_width = int(video.get(3)) # width
+frame_height = int(video.get(4)) # height
+size = (frame_width, frame_height)
+print(size)
 
-    # Display the resulting frame
-    cv2.imshow('frame', frame)
+# Below VideoWriter object will create
+# a frame of above defined size.
+# The output is stored in 'filename.avi' file.
+result = cv2.VideoWriter('filename.avi',
+                         cv2.VideoWriter_fourcc(*'MJPG'),
+                         1, size)
 
-    # the 'q' button is set as the
-    # quitting button you may use any
-    # desired button of your choice
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+# Record for 10 seconds
+
+i = 0
+while i < 20:
+    ret, frame = video.read()
+
+    if ret == True:
+
+        # Write the frame into the file 'filename.avi'
+        result.write(frame)
+
+        # Display the frame
+        # saved in the file
+        # cv2.imshow('Frame', frame)
+        i = i + 1
+        print(i)
+
+    # Break the loop
+    else:
         break
 
-# After the loop release the cap object
-vid.release()
-# Destroy all the windows
+
+video.release()
+result.release()
+
+# Closes all the frames
 cv2.destroyAllWindows()
+
+print("The video was successfully saved")
