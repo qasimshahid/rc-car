@@ -17,6 +17,7 @@ print(size)
 # Below VideoWriter object will create
 # a frame of above defined size.
 # The output is stored in 'filename.avi' file.
+video.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
 result = cv2.VideoWriter('filename.avi',
                          cv2.VideoWriter_fourcc(*'MJPG'),
                          1, size)
