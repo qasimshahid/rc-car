@@ -28,7 +28,7 @@ i = 0
 while i < 20:
     ret, frame = video.read()
 
-    if ret == True:
+    if ret:
 
         # Write the frame into the file 'filename.avi'
         result.write(frame)

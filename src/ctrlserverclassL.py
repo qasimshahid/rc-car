@@ -19,9 +19,9 @@ def get_ip(): # courtesy of stack overflow,
 class ControllerServer:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.buff = 1024
+        self.buff = 64
         self.port = 7007
-        self.delay = 0.008 # 125 Hz polling rate, original Xbox One controller, 8 milliseconds
+        self.delay = 0.008  # 125 Hz polling rate, original Xbox One controller, 8 milliseconds
         self.client = None
         self.host_ip = get_ip()
         print("Host IP: " + self.host_ip)
@@ -36,10 +36,8 @@ class ControllerServer:
     def close_connection(self):
         self.sock.close()
 
-    def send_msg(self):
-        i = 0
-        while i < 1000:
-            self.client.send(bytes("Hello!", "utf-8"))
-            time.sleep(self.delay)
-            i = i + 1
+    def send_msg(self, string):
+        self.client.send(bytes(string, "utf-8"))
+        time.sleep(self.delay)
+
 
