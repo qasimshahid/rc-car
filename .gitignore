@@ -3,3 +3,4 @@ venv
 src/src.und/id.txt
 src/src.und/settings.xml
 src/src.und
+src/__pycache__
