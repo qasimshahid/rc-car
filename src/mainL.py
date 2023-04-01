@@ -13,10 +13,7 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
                 if event.axis == 0 or event.axis == 4 or event.axis == 5:
-                    left_stick_norm = round(joystick.get_axis(0) * 100)
-                    printLeftStick = "{:03d}".format(left_stick_norm)
-                    if 15 > left_stick_norm > -15:
-                        left_stick_norm = 0  # dead zone
+                    left_stick_norm = round(((1 - joystick.get_axis(0)) / 2) * 70 + 70)  # DO NOT CHANGE!
                     printLeftStick = "{:04d}".format(left_stick_norm)
                     left_trig_norm = round((joystick.get_axis(4) + 1) * 50)
                     printLeftTrig = "{:03d}".format(left_trig_norm)
