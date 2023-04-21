@@ -9,15 +9,15 @@ if not video.isOpened():
 
 # We need to set resolutions.
 # So, convert them from float to integer.
-frame_width = int(video.get(3)) # width
-frame_height = int(video.get(4)) # height
+frame_width = int(video.get(3))  # width
+frame_height = int(video.get(4))  # height
 size = (frame_width, frame_height)
 print(size)
 
 # Below VideoWriter object will create
 # a frame of above defined size.
 # The output is stored in 'filename.avi' file.
-video.set(cv2.CAP_PROP_FOURCC,cv2.VideoWriter_fourcc('M','J','P','G'))
+video.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc('M', 'J', 'P', 'G'))
 result = cv2.VideoWriter('filename.avi',
                          cv2.VideoWriter_fourcc(*'MJPG'),
                          1, size)
@@ -42,7 +42,6 @@ while i < 20:
     # Break the loop
     else:
         break
-
 
 video.release()
 result.release()

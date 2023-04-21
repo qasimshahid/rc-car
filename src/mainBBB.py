@@ -22,10 +22,15 @@ def main():
             ls = int(decode[3:7])
             lt = int(decode[10:13])
             rt = int(decode[16:20])
-            rt = 7.5 - (rt * 0.025)  # 5 to 10
+            rt = 7.5 - (rt * 0.025)  # 7.5 to 5 for accelerate
+            lt = 7.5 + (lt * 0.010)  # 7.5 to 8.5 for reverse
             servoControl.turnDegrees(ls)
-            motorControl.changeRPM(rt)
-            print(ls, lt, rt)
+            if lt != 7.5 and rt == 7.5:  # Reversing only allowed if right trigger is off and left trigger is not off.
+                motorControl.changeRPM(lt)
+                print(ls, lt)
+            else:
+                motorControl.changeRPM(rt)  # Else accelerate the car
+                print(ls, lt, rt)
         else:
             print("Connection terminated")
             break
