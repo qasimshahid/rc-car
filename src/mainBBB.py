@@ -1,9 +1,13 @@
 import socket
 import servoBBB
 import motorBBB
+import racer
 
 
 def main():
+    rmconnect = racer.RaceConnection("G17")
+    rmconnect.start()
+
     serverName = "G17"
     serverIP = socket.gethostbyname(serverName)
     print("Using this IP: " + serverIP + "\n")
@@ -34,6 +38,7 @@ def main():
         else:
             print("Connection terminated")
             break
+    rmconnect.stop()
 
 
 if __name__ == "__main__":
