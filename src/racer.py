@@ -5,20 +5,26 @@ import subprocess
 
 
 class RaceConnection:
-    def __init__(self, hostname):
-        try:
-            subprocess.check_call(["pip", "install", "python-socketio"])  # Install dependencies
-        except subprocess.CalledProcessError as e:
-            print("Error installing python-socketio:", e)
+    sio = socketio.Client()
 
-        self.sio = socketio.Client()
+    def __init__(self, hostname):
         self.ip_address = socket.gethostbyname(hostname)
         self.RM = "http://" + self.ip_address + ":3000"
 
         self.sio.on("connect", self.on_connect)
         self.sio.on("disconnect", self.on_disconnect)
-
         self.connected = False
+        self.race_number = 0
+        self.name = ""
+
+    @sio.on("server-msg")
+    def on_server_mg(self):
+        print("Server message:", self)
+
+    # Listen to which rtsp server to connect to
+    @sio.on("get-rtsp-server")
+    def on_get_rtsp(self):
+        print("Server to connect to:", self)
 
     def on_connect(self):
         print("Connected\n")
@@ -29,9 +35,9 @@ class RaceConnection:
         self.connected = False
 
     def racer_setup(self):
-        name = input("Racer name?")
-        race_number = input("Team number?")
-        self.sio.emit("setup-racer", {"name": name, "number": race_number})
+        self.name = input("Racer name? ")
+        self.race_number = input("Team number? ")
+        self.sio.emit("setup-racer", {"name": self.name, "number": self.race_number})
 
     def connect_to_RM(self):
         while not self.connected:
@@ -44,14 +50,20 @@ class RaceConnection:
                 else:
                     time.sleep(1)
 
+    def send_throttle(self, throttle):
+        self.sio.emit(
+            "send-throttle", {"teamNum": self.race_number, "throttle": throttle}
+        )
+        time.sleep(0.1)
+
     def stop(self):
-        self.sio.disconnect(self.RM)
+        self.sio.disconnect()
 
     def start(self):
         self.connect_to_RM()
 
         while True:
-            command = input("To enter a new car, type n, else type q to quit.")
+            command = input("To enter a new car, type n, else type q to quit. ")
             if command.lower() == "n":
                 self.racer_setup()
                 break

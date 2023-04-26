@@ -1,10 +1,12 @@
 import pygame
 import ctrlserverclassL
-
+import racer
 
 def main():
-    controlServer = ctrlserverclassL.ControllerServer()
-    controlServer.establish_connection()  # Wait for connection to establish
+    rmconnect = racer.RaceConnection("DANS-AIR")
+    rmconnect.start()
+    #controlServer = ctrlserverclassL.ControllerServer()
+    #controlServer.establish_connection()  # Wait for connection to establish
     pygame.init()
     joystick = pygame.joystick.Joystick(0)  # Plugged into the laptop via USB
     joystick.init()
@@ -17,9 +19,13 @@ def main():
                     left_trig_norm = round((joystick.get_axis(4) + 1) * 50)  # map to 0-100
                     printLeftTrig = "{:03d}".format(left_trig_norm)
                     right_trig_norm = round((joystick.get_axis(5) + 1) * 50)  # map to 0-100
+                    if left_trig_norm == 0:
+                        rmconnect.send_throttle(right_trig_norm)
+                    else:
+                        rmconnect.send_throttle(left_trig_norm * -1)
                     printRightTrig = "{:03d}".format(right_trig_norm)
                     s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"
-                    controlServer.send_msg(s)  # Send controller input to the BBB.
+                    #controlServer.send_msg(s)  # Send controller input to the BBB.
 
 
 if __name__ == "__main__":
