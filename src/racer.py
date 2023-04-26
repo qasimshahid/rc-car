@@ -1,12 +1,20 @@
 import socketio
 import socket
 import time
+import subprocess
 
 
 class RaceConnection:
     sio = socketio.Client()
 
     def __init__(self, hostname):
+        try:
+            subprocess.check_call(
+                ["pip", "install", "python-socketio"]
+            )  # Install dependencies
+        except subprocess.CalledProcessError as e:
+            print("Error installing python-socketio:", e)
+
         self.ip_address = socket.gethostbyname(hostname)
         self.RM = "http://" + self.ip_address + ":3000"
 
@@ -42,7 +50,7 @@ class RaceConnection:
         while not self.connected:
             try:
                 self.sio.connect(self.RM)
-            except ConnectionError as e:
+            except socketio.exceptions.ConnectionError as e:
                 print("Failed to connect. Retrying...")
                 if str(e) == "Already connected":
                     break
@@ -53,7 +61,6 @@ class RaceConnection:
         self.sio.emit(
             "send-throttle", {"teamNum": self.race_number, "throttle": throttle}
         )
-        time.sleep(0.1)
 
     def stop(self):
         self.sio.disconnect()

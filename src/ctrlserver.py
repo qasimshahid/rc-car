@@ -1,5 +1,4 @@
 import socket
-import time
 
 
 def get_ip():  # courtesy of stack overflow,
@@ -35,7 +34,7 @@ class ControllerServer:
         print(f"Connection established from address {client_address}")
         self.connected = 1  # Successfully established connection
 
-    def retry_connection(self): # If we drop connection, use this to reconnect.
+    def retry_connection(self):  # If we drop connection, use this to reconnect.
         self.sock.listen(1)
         client_socket, client_address = self.sock.accept()
         self.client = client_socket
@@ -48,7 +47,6 @@ class ControllerServer:
     def send_msg(self, string):
         try:
             self.client.send(bytes(string, "utf-8"))
-            time.sleep(self.delay)
         except ConnectionAbortedError:
             self.connected = 0  # lost connection
             while self.connected != 1:

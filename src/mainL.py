@@ -22,11 +22,14 @@ def main():
                     left_trig_norm = round((joystick.get_axis(4) + 1) * 50)  # Map to 0-100
                     printLeftTrig = "{:03d}".format(left_trig_norm)
                     right_trig_norm = round((joystick.get_axis(5) + 1) * 50)  # Map to 0-100
+                    printRightTrig = "{:03d}".format(right_trig_norm)
+
+                    # SEND DATA TO RM
                     if left_trig_norm == 0:
                         RaceManagement.send_throttle(right_trig_norm)  # Send throttle data to RM if no reversing
                     else:
-                        RaceManagement.send_throttle(left_trig_norm * -1) # Send reverse data to RM if no throttle
-                    printRightTrig = "{:03d}".format(right_trig_norm)
+                        RaceManagement.send_throttle(left_trig_norm * -1)  # Send reverse data to RM if no throttle
+
                     s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"
                     controlServer.send_msg(s)  # Send controller input to the BBB.
 
