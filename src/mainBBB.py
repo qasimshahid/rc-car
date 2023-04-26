@@ -1,22 +1,20 @@
 import socket
 import servoBBB
 import motorBBB
-import racer
 
 
 def main():
-    rmconnect = racer.RaceConnection("G17")
-    rmconnect.start()
-
     serverName = "G17"
-    serverIP = socket.gethostbyname(serverName)
+    serverIP = socket.gethostbyname(serverName) # Connect to server by name
     print("Using this IP: " + serverIP + "\n")
     port = 7007
     buff = 64
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect((serverIP, port))
-    servoControl = servoBBB.SteeringServo()
-    motorControl = motorBBB.Motor()
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP socket
+    sock.connect((serverIP, port))  # Connect to the server
+    servoControl = servoBBB.SteeringServo()  # Steering control
+    motorControl = motorBBB.Motor()  # Motor control
+
     while True:
         message = sock.recv(buff)
         if len(message) != 19:
@@ -38,7 +36,6 @@ def main():
         else:
             print("Connection terminated")
             break
-    rmconnect.stop()
 
 
 if __name__ == "__main__":

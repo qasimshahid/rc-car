@@ -1,7 +1,6 @@
 import socketio
 import socket
 import time
-import subprocess
 
 
 class RaceConnection:
@@ -43,7 +42,7 @@ class RaceConnection:
         while not self.connected:
             try:
                 self.sio.connect(self.RM)
-            except socketio.exceptions.ConnectionError as e:
+            except ConnectionError as e:
                 print("Failed to connect. Retrying...")
                 if str(e) == "Already connected":
                     break

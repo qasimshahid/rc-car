@@ -1,3 +1,5 @@
+# REDUNDANT, WILL BE USING FFMPEG DIRECTLY! #
+
 import cv2
 
 # Create an object to read from camera
