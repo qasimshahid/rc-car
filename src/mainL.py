@@ -3,10 +3,15 @@ import ctrlserver
 import racer
 
 
+# 192.168.8.186 - use to connect to BBB while BBB is not plugged in to the USB port of the laptop.
+
+
 def main():
     RMName = "G17"
     RaceManagement = racer.RaceConnection(RMName)  # Establish connection to Race Management
     RaceManagement.start()  # Will prompt for name, number, and send an integer indicating what stream to record to.
+    print("\nThis is now the value of racer.sendFeed: " + racer.sendFeed)
+    print("Feel free to send this variable to tell the BBB which port to stream to!\n")
 
     controlServer = ctrlserver.ControllerServer()
     controlServer.establish_connection()  # Wait for connection to establish
@@ -37,4 +42,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-# 192.168.8.186 - use to connect to BBB while BBB is not plugged in to the USB port of the laptop.
