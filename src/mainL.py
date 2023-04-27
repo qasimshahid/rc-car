@@ -36,7 +36,6 @@ def main():
                         RaceManagement.send_throttle(left_trig_norm * -1)  # Send reverse data to RM if no throttle
 
                     s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"
-                    #      3  + 4           + 3   + 3          + 3 + 3 = 19
                     controlServer.send_msg(s)  # Send controller input to the BBB.
 
 
