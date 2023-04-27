@@ -17,6 +17,8 @@ def main():
 
     while True:
         message = sock.recv(buff)
+        if len(message) != 19:
+            continue
         if message:
             decode = message.decode()
             ls = int(decode[3:7])
