@@ -8,7 +8,7 @@ def main():
     serverIP = socket.gethostbyname(serverName) # Connect to server by name
     print("Using this IP: " + serverIP + "\n")
     port = 7007
-    buff = 64
+    buff = 19
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP socket
     sock.connect((serverIP, port))  # Connect to the server
@@ -17,8 +17,6 @@ def main():
 
     while True:
         message = sock.recv(buff)
-        if len(message) != 19:
-            continue
         if message:
             decode = message.decode()
             ls = int(decode[3:7])

@@ -18,9 +18,8 @@ def get_ip():  # courtesy of stack overflow,
 class ControllerServer:
     def __init__(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.buff = 64
+        self.buff = 19
         self.port = 7007
-        self.delay = 0.008  # 125 Hz polling rate, original Xbox One controller, 8 milliseconds
         self.client = None
         self.host_ip = get_ip()
         self.connected = 0
