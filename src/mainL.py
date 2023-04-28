@@ -3,9 +3,6 @@ import socket
 import racer
 
 
-BB_IP = ""
-
-
 def main():
     RMName = "G17"
     RaceManagement = racer.RaceConnection(RMName)  # Establish connection to Race Management
@@ -15,18 +12,20 @@ def main():
 
     CompName = "G17"
     port = 7007
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
-    sock.bind((socket.gethostbyname(CompName), port))
+    FromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+    FromBB.bind((socket.gethostbyname(CompName), port))
     while True:
-        data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+        data = FromBB.recv(1024)  # buffer size is 1024 bytes
         decoded = data.decode()
         if decoded.startswith("!"):
-            global BB_IP
-            BB_IP = decoded[1:]
+            BB_IP = decoded[1:]  # Now BB_IP has been loaded with BeagleBone's IP.
             print(f"Got BB IP: {BB_IP}")
-            break  # Now BB_IP has been loaded with BeagleBone's IP.
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            bytes_udp = racer.sendFeed.encode()
+            FromBB.sendto(bytes_udp, (BB_IP, port))  # Send UDP video link to BeagleBone.
+            break
+    FromBB.close()  # We do not want to receive any more information from the BeagleBone.
 
+    ToBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
     pygame.init()
     joystick = pygame.joystick.Joystick(0)  # Plugged into the laptop via USB
     joystick.init()
@@ -49,7 +48,7 @@ def main():
 
                     s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"
                     bytes_s = s.encode()
-                    sock.sendto(bytes_s, (BB_IP, port))
+                    ToBB.sendto(bytes_s, (BB_IP, port))
 
 
 if __name__ == "__main__":

@@ -19,7 +19,7 @@ def get_ip():  # courtesy of stack overflow,
 
 def main():
     BB_IP = get_ip()  # Beaglebone IP.
-    print("Using this IP: " + BB_IP + "\n")
+    print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
     buff = 19
 
@@ -28,14 +28,21 @@ def main():
     MESSAGE = f"!{BB_IP}".encode()  # Send the BBB IP to the server.
     sockToServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sockToServer.sendto(MESSAGE, (serverIP, port))
+    while True:
+        message, adr = sockToServer.recv(50)
+        message.decode()
+        if message.startswith("u"):
+            udp_link = message
+            break
+    sockToServer.close()  # We now have the UDP link to stream to and need no more information from the laptop.
+    print(udp_link)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP socket
     sock.bind((BB_IP, port))  # Bind to the server IP and port
     servoControl = servoBBB.SteeringServo()  # Steering control
     motorControl = motorBBB.Motor()  # Motor control
-
     while True:
-        message, adr = sock.recvfrom(buff)
+        message = sock.recv(buff)
         if len(message) == 19:
             decode = message.decode()
             ls = int(decode[3:7])
