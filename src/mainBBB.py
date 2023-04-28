@@ -35,10 +35,8 @@ def main():
     motorControl = motorBBB.Motor()  # Motor control
 
     while True:
-        message, addr = sock.recvfrom(buff)
-        if len(message) != 19:
-            continue
-        if message:
+        message, adr = sock.recvfrom(buff)
+        if len(message) == 19:
             decode = message.decode()
             ls = int(decode[3:7])
             lt = int(decode[10:13])
@@ -52,9 +50,6 @@ def main():
             else:
                 motorControl.changeRPM(rt)  # Else accelerate the car
                 print(ls, lt, rt)
-        else:
-            print("Connection terminated")
-            break
 
 
 if __name__ == "__main__":
