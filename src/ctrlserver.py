@@ -1,4 +1,5 @@
 import socket
+# REDUNDANT, WILL BE USING UDP.
 
 
 def get_ip():  # courtesy of stack overflow,
