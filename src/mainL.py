@@ -1,9 +1,9 @@
 import pygame
-import ctrlserver
+import socket
 import racer
 
 
-# 192.168.8.186 - use to connect to BBB while BBB is not plugged in to the USB port of the laptop.
+BB_IP = ""
 
 
 def main():
@@ -13,8 +13,20 @@ def main():
     print("\nThis is now the value of racer.sendFeed: " + racer.sendFeed)
     print("Feel free to send this variable to tell the BBB which port to stream to!\n")
 
-    controlServer = ctrlserver.ControllerServer()
-    controlServer.establish_connection()  # Wait for connection to establish
+    CompName = "G17"
+    port = 7007
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+    sock.bind((socket.gethostbyname(CompName), port))
+    while True:
+        data, addr = sock.recvfrom(1024)  # buffer size is 1024 bytes
+        decoded = data.decode()
+        if decoded.startswith("!"):
+            global BB_IP
+            BB_IP = decoded[1:]
+            print(f"Got BB IP: {BB_IP}")
+            break  # Now BB_IP has been loaded with BeagleBone's IP.
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
     pygame.init()
     joystick = pygame.joystick.Joystick(0)  # Plugged into the laptop via USB
     joystick.init()
@@ -36,7 +48,8 @@ def main():
                         RaceManagement.send_throttle(left_trig_norm * -1)  # Send reverse data to RM if no throttle
 
                     s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"
-                    controlServer.send_msg(s)  # Send controller input to the BBB.
+                    bytes_s = s.encode()
+                    sock.sendto(bytes_s, (BB_IP, port))
 
 
 if __name__ == "__main__":

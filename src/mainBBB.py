@@ -3,20 +3,39 @@ import servoBBB
 import motorBBB
 
 
+def get_ip():  # courtesy of stack overflow,
+    # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        s.connect(('8.8.8.8', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
+
+
 def main():
-    serverName = "G17"
-    serverIP = socket.gethostbyname(serverName) # Connect to server by name
-    print("Using this IP: " + serverIP + "\n")
+    BB_IP = get_ip()  # Beaglebone IP.
+    print("Using this IP: " + BB_IP + "\n")
     port = 7007
     buff = 19
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # TCP socket
-    sock.connect((serverIP, port))  # Connect to the server
+    serverName = "G17"
+    serverIP = socket.gethostbyname(serverName)
+    MESSAGE = f"!{BB_IP}".encode()  # Send the BBB IP to the server.
+    sockToServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sockToServer.sendto(MESSAGE, (serverIP, port))
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP socket
+    sock.bind((BB_IP, port))  # Bind to the server IP and port
     servoControl = servoBBB.SteeringServo()  # Steering control
     motorControl = motorBBB.Motor()  # Motor control
 
     while True:
-        message = sock.recv(buff)
+        message, addr = sock.recvfrom(buff)
         if len(message) != 19:
             continue
         if message:
