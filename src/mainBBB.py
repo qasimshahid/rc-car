@@ -3,42 +3,34 @@ import servoBBB
 import motorBBB
 
 
-def get_ip():  # courtesy of stack overflow,
-    # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.settimeout(0)
-    try:
-        s.connect(('8.8.8.8', 1))
-        ip = s.getsockname()[0]
-    except Exception:
-        ip = '127.0.0.1'
-    finally:
-        s.close()
-    return ip
-
-
 def main():
     BB_IP = get_ip()  # Beaglebone IP.
     print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
     buff = 19
 
-    serverName = "G17"
-    serverIP = socket.gethostbyname(serverName)
-    MESSAGE = f"!{BB_IP}".encode()  # Send the BBB IP to the server.
-    sockToServer = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sockToServer.sendto(MESSAGE, (serverIP, port))
-    while True:
-        message, adr = sockToServer.recv(50)
-        message.decode()
-        if message.startswith("u"):
-            udp_link = message
-            break
-    sockToServer.close()  # We now have the UDP link to stream to and need no more information from the laptop.
-    print(udp_link)
+    controlName = "G17"
+    controlIP = socket.gethostbyname(controlName)
+    print("This is control's IP: " + controlIP)
+    MESSAGE = f"!{BB_IP}".encode()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind((BB_IP, port))  # Receive the UDP link from server.
+    sock.sendto(MESSAGE, (controlIP, port))  # Send BB IP to server.
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP socket
-    sock.bind((BB_IP, port))  # Bind to the server IP and port
+    udp_link = ""
+    while True:
+        message = sock.recv(64)
+        decoded = message.decode()
+        if decoded.startswith("u"):
+            udp_link = decoded
+            sock.sendto(b"Received", (controlIP, port))
+            break
+        elif decoded is "None":
+            sock.sendto(b"Received", (controlIP, port))
+            udp_link = "Nowhere, no video supplied."
+            break
+    print("This is where I will stream to: " + udp_link)
+
     servoControl = servoBBB.SteeringServo()  # Steering control
     motorControl = motorBBB.Motor()  # Motor control
     while True:
@@ -57,6 +49,20 @@ def main():
             else:
                 motorControl.changeRPM(rt)  # Else accelerate the car
                 print(ls, lt, rt)
+
+
+def get_ip():  # courtesy of stack overflow,
+    # https://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.settimeout(0)
+    try:
+        s.connect(('8.8.8.8', 1))
+        ip = s.getsockname()[0]
+    except Exception:
+        ip = '127.0.0.1'
+    finally:
+        s.close()
+    return ip
 
 
 if __name__ == "__main__":
