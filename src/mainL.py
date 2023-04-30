@@ -2,11 +2,11 @@ import pygame
 import socket
 import racer
 
-
-mode = 2  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
+mode = 1  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
 controlTower = "G17"  # Put name of computer which has controlled connected.
 port = 7007
 BB_IP = ""
+video_feed_test = "None"  # Change as needed. Send "None" if no video testing needed.
 
 
 def main():
@@ -23,20 +23,7 @@ def Race():
     RaceManagement = racer.RaceConnection(RMName)  # Establish connection to Race Management
     RaceManagement.start()  # Will prompt for name, number, and send an integer indicating what stream to record to.
 
-    fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
-    fromBB.bind((socket.gethostbyname(controlTower), port))
-
-    while True:
-        data = fromBB.recv(1024)  # buffer size is 1024 bytes
-        decoded = data.decode()
-        if decoded.startswith("!"):
-            BB_IP = decoded[1:]  # Now BB_IP has been loaded with BeagleBone's IP.
-            print(f"Got BB IP: {BB_IP}")
-            bytes_udp = RaceManagement.sendFeed.encode()
-            fromBB.sendto(bytes_udp, (BB_IP, port))  # Send UDP video link to BeagleBone.
-        elif decoded.startswith("R"):
-            break  # UDP Address received by the BBB.
-    fromBB.close()  # We do not want to receive any more information from the BeagleBone.
+    connect(RaceManagement)
 
     toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
     control(RaceManagement, toBB)
@@ -44,26 +31,33 @@ def Race():
 
 def Test():
     global BB_IP
+    global video_feed_test
     print("Test Mode\n")
-    video_feed = "None"  # Change as needed. Send "None" if no video testing needed.
 
+    connect(None)
+
+    toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
+    control(None, toBB)
+
+
+def connect(RaceManagement):
+    global BB_IP
     fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
     fromBB.bind((socket.gethostbyname(controlTower), port))
 
     while True:
-        data = fromBB.recv(64)
+        data = fromBB.recv(64)  # buffer size is 1024 bytes
         decoded = data.decode()
         if decoded.startswith("!"):
             BB_IP = decoded[1:]  # Now BB_IP has been loaded with BeagleBone's IP.
             print(f"Got BB IP: {BB_IP}")
-            bytes_video = video_feed.encode()
-            fromBB.sendto(bytes_video, (BB_IP, port))
+            if RaceManagement is not None:
+                bytes_udp = RaceManagement.sendFeed.encode()
+            else:
+                bytes_udp = video_feed_test.encode()
+            fromBB.sendto(bytes_udp, (BB_IP, port))  # Send UDP video link to BeagleBone.
         elif decoded.startswith("R"):
-            break
-    fromBB.close()  # We do not want to receive any more information from the BeagleBone.
-
-    toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
-    control(None, toBB)
+            break  # UDP Address received by the BBB.
 
 
 def control(RM, toBB):
@@ -88,9 +82,15 @@ def control(RM, toBB):
                         else:
                             RM.send_throttle(left_trig_norm * -1)  # Send reverse data to RM if no throttle
 
-                    s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}" # Length 19
+                    s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"  # Length 19
                     bytes_s = s.encode()
                     toBB.sendto(bytes_s, (BB_IP, port))
+            elif event.type == pygame.JOYBUTTONDOWN:
+                if event.button == 7:
+                    if RM is not None:
+                        connect(RM)
+                    else:
+                        connect(None)
 
 
 if __name__ == "__main__":

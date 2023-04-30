@@ -25,7 +25,7 @@ def main():
             udp_link = decoded
             sock.sendto(b"Received", (controlIP, port))
             break
-        elif decoded is "None":
+        elif decoded == "None":
             sock.sendto(b"Received", (controlIP, port))
             udp_link = "Nowhere, no video supplied."
             break
