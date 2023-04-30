@@ -3,7 +3,11 @@ import servoBBB
 import motorBBB
 
 
+previous = (105, 7.5, 7.5)  # Values of the previous controller input
+
+
 def main():
+    global previous
     BB_IP = get_ip()  # Beaglebone IP.
     print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
@@ -18,14 +22,16 @@ def main():
     sock.sendto(MESSAGE, (controlIP, port))  # Send BB IP to server.
 
     udp_link = ""
-    while True:
+    while True:  # Program will block here until we send a link to stream to. Use reconnect in mainL, press start.
         message = sock.recv(64)
         decoded = message.decode()
+        if decoded.startswith("L"):
+            continue
         if decoded.startswith("u"):
             udp_link = decoded
             sock.sendto(b"Received", (controlIP, port))
             break
-        elif decoded == "None":
+        elif decoded.startswith("N"):
             sock.sendto(b"Received", (controlIP, port))
             udp_link = "Nowhere, no video supplied."
             break
@@ -42,6 +48,8 @@ def main():
             rt = int(decode[16:20])
             rt = 7.5 - (rt * 0.025)  # 7.5 to 5 for accelerate
             lt = 7.5 + (lt * 0.010)  # 7.5 to 8.5 for reverse
+            if previous == (ls, lt, rt):
+                continue  # If values haven't changed, continue.
             servoControl.turnDegrees(ls)
             if lt != 7.5 and rt == 7.5:  # Reversing only allowed if right trigger is off and left trigger is not off.
                 motorControl.changeRPM(lt)
@@ -49,6 +57,7 @@ def main():
             else:
                 motorControl.changeRPM(rt)  # Else accelerate the car
                 print(ls, lt, rt)
+            previous = (ls, lt, rt)  # Set current values as previous in preparation for next iteration.
 
 
 def get_ip():  # courtesy of stack overflow,

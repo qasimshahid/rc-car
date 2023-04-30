@@ -10,9 +10,9 @@ video_feed_test = "None"  # Change as needed. Send "None" if no video testing ne
 
 
 def main():
-    if mode == 2:
+    if mode == 2:  # Race Mode
         Race()
-    elif mode == 1:
+    elif mode == 1:  # Testing Mode
         Test()
 
 
@@ -23,10 +23,10 @@ def Race():
     RaceManagement = racer.RaceConnection(RMName)  # Establish connection to Race Management
     RaceManagement.start()  # Will prompt for name, number, and send an integer indicating what stream to record to.
 
-    connect(RaceManagement)
+    connect(RaceManagement, 0)  # Send to RM, 0 implies we are connecting for the first time.
 
-    toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
-    control(RaceManagement, toBB)
+    toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    control(RaceManagement, toBB)  # Throttle IS being sent to RM.
 
 
 def Test():
@@ -34,36 +34,46 @@ def Test():
     global video_feed_test
     print("Test Mode\n")
 
-    connect(None)
+    connect(None, 0)  # Do not send to RM, 0 implies we are connecting for the first time.
 
     toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
-    control(None, toBB)
+    control(None, toBB)  # Throttle IS NOT being sent to RM.
 
 
-def connect(RaceManagement):
+def connect(RaceManagement, rec):
     global BB_IP
     fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
     fromBB.bind((socket.gethostbyname(controlTower), port))
 
-    while True:
-        data = fromBB.recv(64)  # buffer size is 1024 bytes
-        decoded = data.decode()
-        if decoded.startswith("!"):
-            BB_IP = decoded[1:]  # Now BB_IP has been loaded with BeagleBone's IP.
-            print(f"Got BB IP: {BB_IP}")
-            if RaceManagement is not None:
-                bytes_udp = RaceManagement.sendFeed.encode()
-            else:
-                bytes_udp = video_feed_test.encode()
-            fromBB.sendto(bytes_udp, (BB_IP, port))  # Send UDP video link to BeagleBone.
-        elif decoded.startswith("R"):
-            break  # UDP Address received by the BBB.
+    #  Rec stands for reconnect. If we lose connection, we can use a simple press instead of restarting the program.
+    if rec == 1:  # On press of the "START" button, send a string for the video link when reconnecting.
+        if RaceManagement is not None:
+            bytes_udp = RaceManagement.sendFeed.encode()
+        else:
+            bytes_udp = video_feed_test.encode()
+        fromBB.sendto(bytes_udp, (BB_IP, port))  # Send UDP video link to BeagleBone.
+
+    else:
+        while True:
+            data = fromBB.recv(64)  # buffer size is 1024 bytes
+            decoded = data.decode()
+            if decoded.startswith("!"):
+                BB_IP = decoded[1:]  # Now BB_IP has been loaded with BeagleBone's IP.
+                print(f"Got BB IP: {BB_IP}")
+                if RaceManagement is not None:
+                    bytes_udp = RaceManagement.sendFeed.encode()
+                else:
+                    bytes_udp = video_feed_test.encode()
+                fromBB.sendto(bytes_udp, (BB_IP, port))  # Send UDP video link to BeagleBone.
+            elif decoded.startswith("R"):
+                break  # UDP Address received by the BBB.
 
 
 def control(RM, toBB):
     pygame.init()
     joystick = pygame.joystick.Joystick(0)  # Plugged into the laptop via USB
     joystick.init()
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
@@ -85,12 +95,14 @@ def control(RM, toBB):
                     s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"  # Length 19
                     bytes_s = s.encode()
                     toBB.sendto(bytes_s, (BB_IP, port))
+
             elif event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 7:
+                    print("Reconnect button pressed...")
                     if RM is not None:
-                        connect(RM)
+                        connect(RM, 1)
                     else:
-                        connect(None)
+                        connect(None, 1)
 
 
 if __name__ == "__main__":
