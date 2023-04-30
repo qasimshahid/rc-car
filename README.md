@@ -1,4 +1,4 @@
-# RC_Car
+# rc_car
 Creating software to control a RC car remotely. Done entirely in Python, using a mix of procedural and object-oriented code.
 Optimized to work with the BeagleBone Black, which is what this was built for. 
 
