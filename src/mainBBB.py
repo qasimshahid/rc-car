@@ -1,13 +1,18 @@
 import socket
 import servoBBB
 import motorBBB
+import subprocess
 
 
 previous = (105, 7.5, 7.5)  # Values of the previous controller input
+ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x360", "-i", "/dev/video0",
+             "-nostdin", "-loglevel", "panic", "-c:v", "copy", "-tune", "zerolatency",
+             "-muxdelay", "0.1", "-g", "0", "-f", "mjpeg", "INDEX 20: LINK GOES HERE"]
 
 
 def main():
     global previous
+    global ffmpegCmd
     BB_IP = get_ip()  # Beaglebone IP.
     print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
@@ -25,17 +30,22 @@ def main():
     while True:  # Program will block here until we send a link to stream to. Use reconnect in mainL, press start.
         message = sock.recv(32)
         decoded = message.decode()
-        if decoded.startswith("L"):
+        if decoded.startswith("L"):  # This happens when we send controller data when reconnecting, just ignore it.
             continue
-        if decoded.startswith("u"):
+        if decoded.startswith("u"):  # This means we received a UDP link to stream to.
             udp_link = decoded
-            sock.sendto(b"Received", (controlIP, port))
+            sock.sendto(b"Received", (controlIP, port))  # Confirm to ControlTower that we received a video link.
             break
         elif decoded.startswith("N"):
             sock.sendto(b"Received", (controlIP, port))
-            udp_link = "Nowhere, no video supplied."
+            udp_link = "No video link supplied. Will not be streaming."
             break
+
     print("This is where I will stream to: " + udp_link)
+    if not udp_link.startswith("N"):  # This means that we have an actual UDP link to stream to. Run ffmpeg command.
+        ffmpegCmd[20] = udp_link  # Put UDP link into ffmpegCmd list.
+        p = subprocess.Popen(ffmpegCmd)  # Run ffmpeg as a background task, no logs. Will not block.
+        print(f"Ffmpeg command ran, streaming to {ffmpegCmd[20]}")
 
     servoControl = servoBBB.SteeringServo()  # Steering control
     motorControl = motorBBB.Motor()  # Motor control
@@ -44,7 +54,7 @@ def main():
             message = sock.recv(buff)
             decode = message.decode()
         except (KeyboardInterrupt, Exception):  # If we want to exit the program, or any other exception.
-            print("Stopping the car...")
+            print("Ctrl-C signal received, stopping the car...")
             motorControl.changeRPM(7.5)  # Stop the car on exception.
             exit(-1)
         try:
