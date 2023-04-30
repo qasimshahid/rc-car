@@ -2,7 +2,7 @@ import pygame
 import socket
 import racer
 
-mode = 1  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
+mode = 2  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
 controlTower = "G17"  # Put name of computer which has controlled connected.
 port = 7007
 BB_IP = ""

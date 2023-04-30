@@ -23,7 +23,7 @@ def main():
 
     udp_link = ""
     while True:  # Program will block here until we send a link to stream to. Use reconnect in mainL, press start.
-        message = sock.recv(64)
+        message = sock.recv(32)
         decoded = message.decode()
         if decoded.startswith("L"):
             continue
@@ -40,24 +40,31 @@ def main():
     servoControl = servoBBB.SteeringServo()  # Steering control
     motorControl = motorBBB.Motor()  # Motor control
     while True:
-        message = sock.recv(buff)
-        if len(message) == 19:
+        try:
+            message = sock.recv(buff)
             decode = message.decode()
+        except (KeyboardInterrupt, Exception):  # If we want to exit the program, or any other exception.
+            print("Stopping the car...")
+            motorControl.changeRPM(7.5)  # Stop the car on exception.
+            exit(-1)
+        try:
             ls = int(decode[3:7])
-            lt = int(decode[10:13])
-            rt = int(decode[16:20])
-            rt = 7.5 - (rt * 0.025)  # 7.5 to 5 for accelerate
-            lt = 7.5 + (lt * 0.010)  # 7.5 to 8.5 for reverse
-            if previous == (ls, lt, rt):
-                continue  # If values haven't changed, continue.
-            servoControl.turnDegrees(ls)
-            if lt != 7.5 and rt == 7.5:  # Reversing only allowed if right trigger is off and left trigger is not off.
-                motorControl.changeRPM(lt)
-                print(ls, lt)
-            else:
-                motorControl.changeRPM(rt)  # Else accelerate the car
-                print(ls, lt, rt)
-            previous = (ls, lt, rt)  # Set current values as previous in preparation for next iteration.
+        except Exception:  # If our message doesn't match the format, this will throw an Exception.
+            continue
+        lt = int(decode[10:13])
+        rt = int(decode[16:20])
+        rt = 7.5 - (rt * 0.025)  # 7.5 to 5 for accelerate
+        lt = 7.5 + (lt * 0.010)  # 7.5 to 8.5 for reverse
+        if previous == (ls, lt, rt):
+            continue  # If values haven't changed, continue.
+        servoControl.turnDegrees(ls)
+        if lt != 7.5 and rt == 7.5:  # Reversing only allowed if right trigger is off and left trigger is not off.
+            motorControl.changeRPM(lt)
+            print(ls, lt)
+        else:
+            motorControl.changeRPM(rt)  # Else accelerate the car
+            print(ls, lt, rt)
+        previous = (ls, lt, rt)  # Set current values as previous in preparation for next iteration.
 
 
 def get_ip():  # courtesy of stack overflow,
