@@ -74,6 +74,7 @@ def control(RM, toBB):
     joystick = pygame.joystick.Joystick(0)  # Plugged into the laptop via USB
     joystick.init()
 
+    previous_input = (0, 0, 0)  # Used to store the previous input
     while True:
         for event in pygame.event.get():
             if event.type == pygame.JOYAXISMOTION:
@@ -92,9 +93,12 @@ def control(RM, toBB):
                         else:
                             RM.send_throttle(left_trig_norm * -1)  # Send reverse data to RM if no throttle
 
-                    s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"  # Length 19
-                    bytes_s = s.encode()
-                    toBB.sendto(bytes_s, (BB_IP, port))
+                    if (left_stick_norm, left_trig_norm, right_trig_norm) != previous_input:
+                        #  We only want to send controller data when inputs change, otherwise it's a waste.
+                        s = f"LS:{printLeftStick}LT:{printLeftTrig}RT:{printRightTrig}"  # Length 19
+                        bytes_s = s.encode()
+                        toBB.sendto(bytes_s, (BB_IP, port))
+                        previous_input = (left_stick_norm, left_trig_norm, right_trig_norm)  # Make previous input.
 
             elif event.type == pygame.JOYBUTTONDOWN:
                 if event.button == 7:
