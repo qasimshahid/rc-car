@@ -4,21 +4,20 @@ import motorBBB
 import subprocess
 
 
-previous = (105, 7.5, 7.5)  # Values of the previous controller input
-ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x360", "-i", "/dev/video0",
+controlName = "G17"  # Enter the name of hostname of the Control Tower Computer (where controller is plugged into).
+ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x480", "-i", "/dev/video0",
              "-nostdin", "-loglevel", "panic", "-c:v", "copy", "-tune", "zerolatency",
              "-muxdelay", "0.1", "-g", "0", "-f", "mjpeg", "INDEX 20: LINK GOES HERE"]
 
 
 def main():
-    global previous
     global ffmpegCmd
+    global controlName
     BB_IP = get_ip()  # Beaglebone IP.
     print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
     buff = 19
 
-    controlName = "G17"
     controlIP = socket.gethostbyname(controlName)
     print("This is control's IP: " + controlIP)
     MESSAGE = f"!{BB_IP}".encode()
@@ -60,13 +59,11 @@ def main():
         try:
             ls = int(decode[3:7])
         except Exception:  # If our message doesn't match the format, this will throw an Exception.
-            continue
+            continue  # Try getting another message
         lt = int(decode[10:13])
         rt = int(decode[16:20])
         rt = 7.5 - (rt * 0.025)  # 7.5 to 5 for accelerate
         lt = 7.5 + (lt * 0.010)  # 7.5 to 8.5 for reverse
-        if previous == (ls, lt, rt):
-            continue  # If values haven't changed, continue.
         servoControl.turnDegrees(ls)
         if lt != 7.5 and rt == 7.5:  # Reversing only allowed if right trigger is off and left trigger is not off.
             motorControl.changeRPM(lt)
@@ -74,7 +71,6 @@ def main():
         else:
             motorControl.changeRPM(rt)  # Else accelerate the car
             print(ls, lt, rt)
-        previous = (ls, lt, rt)  # Set current values as previous in preparation for next iteration.
 
 
 def get_ip():  # courtesy of stack overflow,

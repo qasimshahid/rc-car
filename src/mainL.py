@@ -2,6 +2,7 @@ import pygame
 import socket
 import racer
 
+
 mode = 2  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
 controlTower = "G17"  # Put name of computer which has the controller connected to it.
 port = 7007
