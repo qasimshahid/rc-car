@@ -7,7 +7,9 @@ mode = 2  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
 controlTower = "G17"  # Put name of computer which has the controller connected to it.
 port = 7007
 BB_IP = ""
-video_feed_test = "None"  # Change as needed. Send "None" if no video testing needed.
+fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
+fromBB.bind((socket.gethostbyname(controlTower), port))
+toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
 def main():
@@ -19,6 +21,7 @@ def main():
 
 def Race():
     global BB_IP
+    global toBB
     print("Race Mode\n")
     RMName = "G17"
     RaceManagement = racer.RaceConnection(RMName)  # Establish connection to Race Management
@@ -26,25 +29,23 @@ def Race():
 
     connect(RaceManagement, 0)  # Send to RM, 0 implies we are connecting for the first time.
 
-    toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    control(RaceManagement, toBB)  # Throttle IS being sent to RM.
+    control(RaceManagement)  # Throttle IS being sent to RM.
 
 
 def Test():
     global BB_IP
-    global video_feed_test
+    global toBB
     print("Test Mode\n")
 
     connect(None, 0)  # Do not send to RM, 0 implies we are connecting for the first time.
 
-    toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # Socket for sending to the BB. No more receiving.
-    control(None, toBB)  # Throttle IS NOT being sent to RM.
+    control(None)  # Throttle IS NOT being sent to RM.
 
 
 def connect(RaceManagement, rec):
     global BB_IP
-    fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
-    fromBB.bind((socket.gethostbyname(controlTower), port))
+    global fromBB
+    video_feed_test = "None"  # Change as needed. Send "None" if no video testing needed.
 
     #  Rec stands for reconnect. If we lose connection, we can use a simple press instead of restarting the program.
     if rec == 1:  # On press of the "START" button, send a string for the video link when reconnecting.
@@ -70,7 +71,8 @@ def connect(RaceManagement, rec):
                 break  # UDP Address received by the BBB.
 
 
-def control(RM, toBB):
+def control(RM):
+    global toBB
     pygame.init()
     joystick = pygame.joystick.Joystick(0)  # Plugged into the laptop via USB
     joystick.init()
