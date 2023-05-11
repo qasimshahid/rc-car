@@ -7,11 +7,11 @@ controlName = "G17"  # Enter the name of hostname of the Control Tower Computer 
 ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x480", "-i", "/dev/video0",
              "-nostdin", "-loglevel", "panic", "-c:v", "copy", "-tune", "zerolatency",
              "-muxdelay", "0.1", "-g", "0", "-f", "mjpeg", "INDEX 20: LINK GOES HERE"]
+p = ""
 
 
 def main():
-    global ffmpegCmd
-    global controlName
+    global ffmpegCmd, p, controlName
     BB_IP = get_ip()  # Beaglebone IP.
     print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
@@ -56,6 +56,7 @@ def main():
             motorControl.changeRPM(7.5)  # Stop the car on exception.
             exit(-1)
         if decode == "SendFeedAgain":
+            p.terminate()  # Terminate the old video feed process.
             p = subprocess.Popen(ffmpegCmd)
             continue
         try:
