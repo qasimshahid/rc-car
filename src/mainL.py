@@ -2,13 +2,13 @@ import pygame
 import socket
 import racer
 
-
 mode = 2  # Put 2 here if in Race mode. 1 if just testing (No connection to RM)
 controlTower = "G17"  # Put name of computer which has the controller connected to it.
 port = 7007
 BB_IP = ""
 fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
 fromBB.bind((socket.gethostbyname(controlTower), port))
+# fromBB.bind(("192.168.137.1", port))
 toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
@@ -110,6 +110,10 @@ def control(RM):
                         connect(RM, 1)
                     else:
                         connect(None, 1)
+                if event.button == 6:
+                    print("Reconnect video feed...")
+                    bytes_r = "SendFeedAgain"
+                    toBB.sendto(bytes_r.encode(), (BB_IP, port))
 
 
 if __name__ == "__main__":

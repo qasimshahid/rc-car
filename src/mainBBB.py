@@ -3,7 +3,6 @@ import servoBBB
 import motorBBB
 import subprocess
 
-
 controlName = "G17"  # Enter the name of hostname of the Control Tower Computer (where controller is plugged into).
 ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x480", "-i", "/dev/video0",
              "-nostdin", "-loglevel", "panic", "-c:v", "copy", "-tune", "zerolatency",
@@ -56,6 +55,9 @@ def main():
             print("Ctrl-C signal received, stopping the car...")
             motorControl.changeRPM(7.5)  # Stop the car on exception.
             exit(-1)
+        if decode == "SendFeedAgain":
+            p = subprocess.Popen(ffmpegCmd)
+            continue
         try:
             ls = int(decode[3:7])
         except Exception:  # If our message doesn't match the format, this will throw an Exception.
