@@ -56,6 +56,7 @@ def main():
             motorControl.changeRPM(7.5)  # Stop the car on exception.
             exit(-1)
         if decode == "SendFeedAgain":
+            print("Closing video feed and retrying...")
             p.terminate()  # Terminate the old video feed process.
             p = subprocess.Popen(ffmpegCmd)
             continue
