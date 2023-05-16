@@ -8,7 +8,6 @@ port = 7007
 BB_IP = ""
 fromBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)  # UDP
 fromBB.bind((socket.gethostbyname(controlTower), port))
-# fromBB.bind(("192.168.137.1", port))
 toBB = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 
@@ -20,8 +19,7 @@ def main():
 
 
 def Race():
-    global BB_IP
-    global toBB
+    global BB_IP, toBB
     print("Race Mode\n")
     RMName = "G17"
     RaceManagement = racer.RaceConnection(RMName)  # Establish connection to Race Management
@@ -33,8 +31,7 @@ def Race():
 
 
 def Test():
-    global BB_IP
-    global toBB
+    global BB_IP, toBB
     print("Test Mode\n")
 
     connect(None, 0)  # Do not send to RM, 0 implies we are connecting for the first time.
@@ -43,8 +40,7 @@ def Test():
 
 
 def connect(RaceManagement, rec):
-    global BB_IP
-    global fromBB
+    global BB_IP, fromBB
     video_feed_test = "None"  # Change as needed. Send "None" if no video testing needed.
 
     #  Rec stands for reconnect. If we lose connection, we can use a simple press instead of restarting the program.

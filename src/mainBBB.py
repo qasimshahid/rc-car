@@ -7,11 +7,11 @@ controlName = "G17"  # Enter the name of hostname of the Control Tower Computer 
 ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x480", "-i", "/dev/video0",
              "-nostdin", "-loglevel", "panic", "-c:v", "copy", "-tune", "zerolatency",
              "-muxdelay", "0.1", "-g", "0", "-f", "mjpeg", "INDEX 20: LINK GOES HERE"]
-p = ""
 
 
 def main():
-    global ffmpegCmd, p, controlName
+    global ffmpegCmd, controlName
+    p = None
     BB_IP = get_ip()  # Beaglebone IP.
     print("This is the BeagleBone's IP: " + BB_IP + "\n")
     port = 7007
@@ -70,10 +70,10 @@ def main():
         servoControl.turnDegrees(ls)
         if lt != 7.5 and rt == 7.5:  # Reversing only allowed if right trigger is off and left trigger is not off.
             motorControl.changeRPM(lt)
-            print(ls, lt)
+            # print(ls, lt)
         else:
             motorControl.changeRPM(rt)  # Else accelerate the car
-            print(ls, lt, rt)
+            # print(ls, lt, rt)
 
 
 def get_ip():  # courtesy of stack overflow,
