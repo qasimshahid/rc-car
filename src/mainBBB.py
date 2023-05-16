@@ -3,7 +3,7 @@ import servoBBB
 import motorBBB
 import subprocess
 
-controlName = "G17"  # Enter the name of hostname of the Control Tower Computer (where controller is plugged into).
+controlName = "Matts-Spectre"  # Enter the name of hostname of the Control Tower Computer (where controller is plugged into).
 ffmpegCmd = ["ffmpeg", "-c:v", "mjpeg", "-s", "640x480", "-i", "/dev/video0",
              "-nostdin", "-loglevel", "panic", "-c:v", "copy", "-tune", "zerolatency",
              "-muxdelay", "0.1", "-g", "0", "-f", "mjpeg", "INDEX 20: LINK GOES HERE"]
